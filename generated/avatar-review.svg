@@ -1,0 +1,15 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Avatar review">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f6f3"/>
+      <stop offset="1" stop-color="#d7e5de"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <circle cx="300" cy="225" r="100" fill="#f2d0be"/>
+  <rect x="175" y="320" width="250" height="200" rx="110" fill="#294534"/>
+  <rect x="105" y="400" width="390" height="170" rx="100" fill="#355a46"/>
+  <circle cx="262" cy="225" r="8" fill="#1f1f1f"/>
+  <circle cx="338" cy="225" r="8" fill="#1f1f1f"/>
+  <path d="M260 282c16 12 64 12 80 0" stroke="#8d6151" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>

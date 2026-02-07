@@ -1,0 +1,23 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Portrait Coach">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e7efe9"/>
+      <stop offset="1" stop-color="#c3d7cb"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#274233"/>
+      <stop offset="1" stop-color="#365944"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="600" cy="280" r="130" fill="#efc9b6"/>
+  <rect x="420" y="390" width="360" height="320" rx="160" fill="url(#shirt)"/>
+  <rect x="360" y="470" width="480" height="320" rx="200" fill="url(#shirt)"/>
+  <path d="M470 250c30-65 220-65 260 0" fill="#2a2a2a"/>
+  <circle cx="550" cy="280" r="10" fill="#1c1c1c"/>
+  <circle cx="650" cy="280" r="10" fill="#1c1c1c"/>
+  <path d="M545 340c26 18 84 18 110 0" stroke="#9a6b58" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <rect x="470" y="410" width="260" height="18" rx="9" fill="#ffffff" fill-opacity="0.45"/>
+  <rect x="50" y="760" width="320" height="92" rx="16" fill="#ffffff" fill-opacity="0.65"/>
+  <text x="80" y="815" font-family="Arial" font-size="36" fill="#2c4a3a">ELEA Mentor</text>
+</svg>
