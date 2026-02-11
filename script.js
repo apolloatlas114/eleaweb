@@ -403,6 +403,8 @@ if (
   let activeFeatureId = orbitFeatures[0].id;
   let view = { x: 0, y: 0, scale: 1, fitScale: 1 };
   let dragState = null;
+  let pinchState = null;
+  const activePointers = new Map();
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -437,6 +439,39 @@ if (
 
   const applyCanvasTransform = () => {
     orbitCanvas.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+  };
+
+  const toLocalPoint = (clientX, clientY) => {
+    const rect = orbitViewport.getBoundingClientRect();
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  };
+
+  const getPointerPair = () => {
+    const values = Array.from(activePointers.values());
+    if (values.length < 2) return null;
+    return [values[0], values[1]];
+  };
+
+  const beginPinch = () => {
+    const pair = getPointerPair();
+    if (!pair) return;
+    const [first, second] = pair;
+    const distance = Math.hypot(second.x - first.x, second.y - first.y);
+    if (distance <= 0) return;
+    const midClientX = (first.x + second.x) / 2;
+    const midClientY = (first.y + second.y) / 2;
+    const midpoint = toLocalPoint(midClientX, midClientY);
+    pinchState = {
+      startDistance: distance,
+      startScale: view.scale,
+      worldX: (midpoint.x - view.x) / view.scale,
+      worldY: (midpoint.y - view.y) / view.scale,
+    };
+    dragState = null;
+    orbitViewport.classList.add("is-dragging");
   };
 
   const zoomTo = (targetScale, originX, originY) => {
@@ -569,30 +604,102 @@ if (
   );
 
   orbitViewport.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     if (event.target.closest(".elea-orbit-node") || event.target.closest(".elea-orbit-controls")) return;
-    dragState = { x: event.clientX, y: event.clientY, startX: view.x, startY: view.y };
-    orbitViewport.classList.add("is-dragging");
+
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     orbitViewport.setPointerCapture(event.pointerId);
+
+    if (activePointers.size === 1) {
+      dragState = { x: event.clientX, y: event.clientY, startX: view.x, startY: view.y };
+      pinchState = null;
+      orbitViewport.classList.add("is-dragging");
+    } else if (activePointers.size === 2) {
+      beginPinch();
+    }
+
+    if (event.pointerType !== "mouse" && event.cancelable) {
+      event.preventDefault();
+    }
   });
 
   orbitViewport.addEventListener("pointermove", (event) => {
+    if (!activePointers.has(event.pointerId)) return;
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (activePointers.size >= 2) {
+      const pair = getPointerPair();
+      if (!pair) return;
+      const [first, second] = pair;
+      const distance = Math.hypot(second.x - first.x, second.y - first.y);
+      if (!pinchState) {
+        beginPinch();
+      }
+      if (pinchState && distance > 0) {
+        const nextScale = clamp((pinchState.startScale * distance) / pinchState.startDistance, minScale, maxScale);
+        const midClientX = (first.x + second.x) / 2;
+        const midClientY = (first.y + second.y) / 2;
+        const midpoint = toLocalPoint(midClientX, midClientY);
+        view.scale = nextScale;
+        view.x = midpoint.x - pinchState.worldX * nextScale;
+        view.y = midpoint.y - pinchState.worldY * nextScale;
+        applyCanvasTransform();
+      }
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+      return;
+    }
+
     if (!dragState) return;
     const dx = event.clientX - dragState.x;
     const dy = event.clientY - dragState.y;
     view.x = dragState.startX + dx;
     view.y = dragState.startY + dy;
     applyCanvasTransform();
+
+    if (event.pointerType !== "mouse" && event.cancelable) {
+      event.preventDefault();
+    }
   });
 
-  const stopDrag = () => {
+  const stopPointer = (event) => {
+    if (
+      typeof orbitViewport.hasPointerCapture === "function" &&
+      typeof orbitViewport.releasePointerCapture === "function" &&
+      orbitViewport.hasPointerCapture(event.pointerId)
+    ) {
+      orbitViewport.releasePointerCapture(event.pointerId);
+    }
+    activePointers.delete(event.pointerId);
+
+    if (activePointers.size >= 2) {
+      beginPinch();
+      return;
+    }
+
+    pinchState = null;
+    if (activePointers.size === 1) {
+      const remaining = Array.from(activePointers.values())[0];
+      dragState = { x: remaining.x, y: remaining.y, startX: view.x, startY: view.y };
+      orbitViewport.classList.add("is-dragging");
+      return;
+    }
+
     dragState = null;
     orbitViewport.classList.remove("is-dragging");
   };
 
-  orbitViewport.addEventListener("pointerup", stopDrag);
-  orbitViewport.addEventListener("pointercancel", stopDrag);
-  orbitViewport.addEventListener("pointerleave", stopDrag);
+  orbitViewport.addEventListener("pointerup", stopPointer);
+  orbitViewport.addEventListener("pointercancel", stopPointer);
+  orbitViewport.addEventListener("lostpointercapture", (event) => {
+    activePointers.delete(event.pointerId);
+    if (activePointers.size === 0) {
+      dragState = null;
+      pinchState = null;
+      orbitViewport.classList.remove("is-dragging");
+    }
+  });
 
   const rerenderAndFit = () => {
     renderOrbit();

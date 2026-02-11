@@ -673,7 +673,10 @@ img {
   position: absolute;
   inset: 0;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .elea-orbit-viewport.is-dragging {
@@ -685,6 +688,7 @@ img {
   height: 560px;
   position: relative;
   transform-origin: 0 0;
+  will-change: transform;
 }
 
 .elea-orbit-lanes {
