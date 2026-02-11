@@ -683,6 +683,10 @@ img {
   cursor: grabbing;
 }
 
+.elea-orbit-viewport.is-dragging .elea-orbit-node {
+  pointer-events: none;
+}
+
 .elea-orbit-canvas {
   width: 760px;
   height: 560px;
